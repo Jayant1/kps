@@ -1,0 +1,33 @@
+{
+  "name": "kps-api",
+  "version": "1.0.0",
+  "description": "REST API Kenteken en Personen Systeem - Rijbewijzen",
+  "main": "api_kps.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node api_kps.js",
+    "dev": "nodemon api_kps.js",
+    "production": "SSL_KEY=/etc/ssl/kps/privkey.pem SSL_CERT=/etc/ssl/kps/fullchain.pem NODE_ENV=production node api_kps.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jayant1/kps.git"
+  },
+  "author": "Mathoera Jayant",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Jayant1/kps/issues"
+  },
+  "homepage": "https://github.com/Jayant1/kps#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mariadb": "^3.4.5",
+    "nodemon": "^3.1.10",
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
