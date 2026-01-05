@@ -41,7 +41,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'https://kps-api.gov.sr:3001',
+        url: 'https://kps-api.gov.sr:3000',
         description: 'Sandbox omgeving'
       }
     ]
@@ -64,7 +64,7 @@ require("./routes/rijbewijzen.route.js")(app);
 
 const env = (process.env.NODE_ENV || "development").trim();
 const hostname = process.env.HOST || "0.0.0.0";
-const portnumber = process.env.PORT || 3001;
+const portnumber = process.env.PORT || 3000;
 
 // SSL configuratie
 const sslKeyPath = process.env.SSL_KEY || '/etc/ssl/kps/privkey.pem';
