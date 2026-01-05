@@ -1,4 +1,4 @@
-# KPS - Kenteken en Personen Systeem (Rijbewijzen)
+# KPS - Korps Politie Suriname (Afdeling Rijbewijzen)
 
 REST API voor beheer van rijbewijzen, rijscholen, examens en verkeersovertredingen.
 
@@ -29,7 +29,7 @@ Na het starten van de server is de Swagger documentatie beschikbaar op:
 
 ## Endpoints
 
-### Rijbewijzen
+### Afdeling Rijbewijzen
 - `GET /api/rijbewijs/:identificatienummer` - Ophalen rijbewijs gegevens
 - `GET /api/rijbewijs/aanvragen/:identificatienummer` - Ophalen aanvragen
 - `GET /api/dossier/:identificatienummer` - Compleet rijbewijs dossier

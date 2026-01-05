@@ -1,7 +1,7 @@
 {
   "name": "kps-api",
   "version": "1.0.0",
-  "description": "REST API Kenteken en Personen Systeem - Rijbewijzen",
+  "description": "REST API Korps Politie Suriname - Afdeling Rijbewijzen",
   "main": "api_kps.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

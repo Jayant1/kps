@@ -31,7 +31,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'KPS subsysteem (Kenteken en Personen Systeem - Rijbewijzen)',
+      title: 'KPS subsysteem (Korps Politie Suriname - Afdeling Rijbewijzen)',
       version: '1.0.0',
       description: 'REST API voor beheer van rijbewijzen, rijscholen, examens en overtredingen',
       contact: {
@@ -56,7 +56,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Simple test route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to KPS API application - Rijbewijzen Systeem." });
+  res.json({ message: "Welcome to KPS API application - Afdeling Rijbewijzen Systeem." });
 });
 
 // Import routes
