@@ -54,6 +54,11 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 // Swagger UI endpoint
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// OpenAPI spec endpoint voor X-Road
+app.get('/api/openapi.json', (req, res) => {
+  res.json(swaggerSpec);
+});
+
 // Simple test route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to KPS API application - Afdeling Rijbewijzen Systeem." });
