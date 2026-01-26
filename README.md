@@ -25,7 +25,7 @@ npm run production
 
 Na het starten van de server is de Swagger documentatie beschikbaar op:
 - Development: http://localhost:3001/api/docs
-- Production: https://kps-api.gov.sr:3001/api/docs
+- Production: https://api-kps.gov.sr:3001/api/docs
 
 ## Endpoints
 

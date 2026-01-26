@@ -1,5 +1,5 @@
 {
-  "name": "kps-api",
+  "name": "api-kps",
   "version": "1.0.0",
   "description": "REST API Korps Politie Suriname - Afdeling Rijbewijzen",
   "main": "api_kps.js",

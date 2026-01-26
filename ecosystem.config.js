@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'kps-api',
+      name: 'api-kps',
       script: '/root/kps/app/api_kps.js',
       instances: 1,
       autorestart: true,

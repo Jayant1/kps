@@ -42,7 +42,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'https://kps-api.gov.sr:3000',
+        url: 'https://api-kps.gov.sr:3000',
         description: 'Sandbox omgeving'
       }
     ]
