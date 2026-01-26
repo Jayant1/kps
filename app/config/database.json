@@ -3,7 +3,7 @@
     "username": "kps_admin",
     "password": "jay123",
     "database": "rijbewijzen",
-    "host": "kps-db.gov.sr",
+    "host": "db-kps.gov.sr",
     "port": "3306",
     "dialect": "mariadb",
     "timezone": "-03:00",
