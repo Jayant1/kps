@@ -1,733 +1,497 @@
+const controller = require("../controller/rijbewijzen.controller.js");
+
+/**
+ * @swagger
+ * tags:
+ *   name: Rijbewijzen
+ *   description: Beheer van rijschoolinschrijvingen, examenaanmeldingen en examenresultaten
+ */
+
 /**
  * @swagger
  * components:
  *   schemas:
- *     Rijbewijs:
+ *     Inschrijving:
  *       type: object
+ *       required:
+ *         - student_id
+ *         - rijschool_id
+ *         - categorie_id
+ *         - ingevoerd_door
  *       properties:
- *         id:
+ *         student_id:
  *           type: integer
- *         identificatienummer_houder:
- *           type: string
- *         rijbewijs_nummer:
- *           type: string
- *         uitgiftedatum:
+ *           description: ID van de student
+ *         rijschool_id:
+ *           type: integer
+ *           description: ID van de rijschool
+ *         instructeur_id:
+ *           type: integer
+ *           description: ID van de instructeur (optioneel)
+ *         categorie_id:
+ *           type: integer
+ *           description: ID van de rijbewijscategorie
+ *         inschrijfdatum:
  *           type: string
  *           format: date
- *         vervaldatum:
+ *           description: Datum van inschrijving (standaard vandaag)
+ *         ingevoerd_door:
  *           type: string
- *           format: date
- *         uitgegeven_door:
- *           type: string
- *         opmerkingen:
- *           type: string
- *         status:
- *           $ref: '#/components/schemas/RijbewijsStatus'
- *         categorieen:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/RijbewijsCategorieKoppeling'
- *         overtredingen:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Overtreding'
- *     RijbewijsStatus:
+ *           description: Gebruikersnaam van de invoerder
+ *     AdviesTheorie:
  *       type: object
+ *       required:
+ *         - advies_theorie
+ *         - gewijzigd_door
  *       properties:
- *         id:
- *           type: integer
- *         naam:
+ *         advies_theorie:
  *           type: string
- *     RijbewijsCategorie:
+ *           enum: [positief, negatief, in_behandeling]
+ *           description: Advies voor het theorie examen
+ *         advies_theorie_datum:
+ *           type: string
+ *           format: date
+ *           description: Datum van het advies
+ *         gewijzigd_door:
+ *           type: string
+ *           description: Gebruikersnaam van de wijziger
+ *     AdviesPraktijk:
  *       type: object
+ *       required:
+ *         - advies_praktijk
+ *         - gewijzigd_door
  *       properties:
- *         id:
- *           type: integer
- *         code:
+ *         advies_praktijk:
  *           type: string
- *         omschrijving:
+ *           enum: [positief, negatief, in_behandeling]
+ *           description: Advies voor het praktijk examen
+ *         advies_praktijk_datum:
  *           type: string
- *         min_leeftijd:
- *           type: integer
- *     RijbewijsCategorieKoppeling:
+ *           format: date
+ *           description: Datum van het advies
+ *         gewijzigd_door:
+ *           type: string
+ *           description: Gebruikersnaam van de wijziger
+ *     ExamenAanmelding:
  *       type: object
+ *       required:
+ *         - inschrijving_id
+ *         - gekozen_datum
+ *         - ingevoerd_door
  *       properties:
- *         id:
+ *         inschrijving_id:
  *           type: integer
- *         behaald_op:
- *           type: string
- *           format: date
- *         geldig_tot:
- *           type: string
- *           format: date
- *         categorie:
- *           $ref: '#/components/schemas/RijbewijsCategorie'
- *     RijbewijsAanvraag:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         identificatienummer_aanvrager:
- *           type: string
- *         aanvraag_datum:
- *           type: string
- *           format: date
- *         besluit_datum:
- *           type: string
- *           format: date
- *         datum_medische_keuring:
+ *           description: ID van de rijschoolinschrijving
+ *         gekozen_datum:
  *           type: string
  *           format: date-time
- *         opmerkingen:
- *           type: string
- *         categorie:
- *           $ref: '#/components/schemas/RijbewijsCategorie'
- *         status:
- *           $ref: '#/components/schemas/AanvraagStatus'
- *     AanvraagStatus:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         naam:
- *           type: string
- *     Rijexamen:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         identificatienummer_kandidaat:
- *           type: string
- *         examen_datum:
- *           type: string
- *           format: date-time
+ *           description: Gekozen datum en tijd voor het examen
  *         locatie:
  *           type: string
+ *           description: Locatie van het examen (optioneel)
+ *         ingevoerd_door:
+ *           type: string
+ *           description: Gebruikersnaam van de invoerder
+ *     TheorieResultaat:
+ *       type: object
+ *       required:
+ *         - aanmelding_id
+ *         - afgenomen_op
+ *         - geslaagd
+ *         - ingevoerd_door
+ *       properties:
+ *         aanmelding_id:
+ *           type: integer
+ *           description: ID van de examen aanmelding
+ *         surveillant_id:
+ *           type: integer
+ *           description: ID van de surveillant (optioneel)
+ *         afgenomen_op:
+ *           type: string
+ *           format: date
+ *           description: Datum waarop het examen is afgenomen
  *         score:
  *           type: integer
+ *           description: Behaalde score
+ *         max_score:
+ *           type: integer
+ *           description: Maximale score
+ *         geslaagd:
+ *           type: boolean
+ *           description: Of de student geslaagd is
  *         opmerkingen:
  *           type: string
- *         categorie:
- *           $ref: '#/components/schemas/RijbewijsCategorie'
- *         examen_type:
- *           $ref: '#/components/schemas/ExamenType'
+ *           description: Opmerkingen bij het resultaat
+ *         ingevoerd_door:
+ *           type: string
+ *           description: Gebruikersnaam van de invoerder
+ *     PraktijkDetail:
+ *       type: object
+ *       properties:
+ *         volgorde:
+ *           type: integer
+ *           description: Volgorde van de opdracht
+ *         type_opdracht:
+ *           type: string
+ *           description: Type van de opdracht
+ *         categorie_opdracht:
+ *           type: string
+ *           description: Categorie van de opdracht
  *         resultaat:
- *           $ref: '#/components/schemas/ExamenResultaat'
- *         instructeur:
- *           $ref: '#/components/schemas/Instructeur'
- *     ExamenType:
+ *           type: string
+ *           description: Resultaat van de opdracht
+ *         notitie:
+ *           type: string
+ *           description: Notitie bij de opdracht
+ *     PraktijkResultaat:
  *       type: object
+ *       required:
+ *         - aanmelding_id
+ *         - examinator_id
+ *         - afgenomen_op
+ *         - geslaagd
+ *         - ingevoerd_door
  *       properties:
- *         id:
+ *         aanmelding_id:
  *           type: integer
- *         naam:
- *           type: string
- *     ExamenResultaat:
- *       type: object
- *       properties:
- *         id:
+ *           description: ID van de examen aanmelding
+ *         examinator_id:
  *           type: integer
- *         naam:
- *           type: string
- *     Rijles:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         identificatienummer_leerling:
- *           type: string
- *         les_datum:
- *           type: string
- *           format: date-time
- *         les_duur_minuten:
- *           type: integer
- *         opmerkingen:
- *           type: string
- *         rijschool:
- *           $ref: '#/components/schemas/Rijschool'
- *         instructeur:
- *           $ref: '#/components/schemas/Instructeur'
- *         categorie:
- *           $ref: '#/components/schemas/RijbewijsCategorie'
- *     Rijschool:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         naam:
- *           type: string
- *         adres:
- *           type: string
- *         distrikt:
- *           type: string
- *         wijk:
- *           type: string
- *         kvk_nummer:
- *           type: string
- *         vergunning_nummer:
- *           type: string
- *         vergunning_geldig_tot:
+ *           description: ID van de examinator
+ *         afgenomen_op:
  *           type: string
  *           format: date
- *         telefoon:
+ *           description: Datum waarop het examen is afgenomen
+ *         route_omschrijving:
  *           type: string
- *         email:
- *           type: string
- *         actief:
- *           type: boolean
- *         instructeurs:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Instructeur'
- *     Instructeur:
- *       type: object
- *       properties:
- *         id:
+ *           description: Omschrijving van de gereden route
+ *         rijtijd_minuten:
  *           type: integer
- *         identificatienummer_instructeur:
- *           type: string
- *         certificaat_nummer:
- *           type: string
- *         certificaat_geldig_tot:
- *           type: string
- *           format: date
- *         bevoegde_categorieen:
- *           type: string
- *         actief:
+ *           description: Rijtijd in minuten
+ *         geslaagd:
  *           type: boolean
- *         rijschool:
- *           $ref: '#/components/schemas/Rijschool'
- *     Overtreding:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         identificatienummer_overtreder:
- *           type: string
- *         overtreding_datum:
- *           type: string
- *           format: date-time
- *         locatie:
- *           type: string
- *         boete_bedrag:
- *           type: number
- *         proces_verbaal_nummer:
- *           type: string
+ *           description: Of de student geslaagd is
  *         opmerkingen:
  *           type: string
- *         rijbewijs:
- *           $ref: '#/components/schemas/Rijbewijs'
- *         overtreding_type:
- *           $ref: '#/components/schemas/OvertredingType'
- *     OvertredingType:
+ *           description: Opmerkingen bij het resultaat
+ *         ingevoerd_door:
+ *           type: string
+ *           description: Gebruikersnaam van de invoerder
+ *         details:
+ *           type: array
+ *           description: Lijst van beoordelingsdetails (optioneel)
+ *           items:
+ *             $ref: '#/components/schemas/PraktijkDetail'
+ *     SuccessResponse:
  *       type: object
  *       properties:
- *         id:
- *           type: integer
- *         code:
- *           type: string
- *         omschrijving:
- *           type: string
- *     CompleetDossier:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         data:
+ *           type: object
+ *     ErrorResponse:
  *       type: object
  *       properties:
- *         identificatienummer:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
  *           type: string
- *         rijbewijs:
- *           $ref: '#/components/schemas/Rijbewijs'
- *         aanvragen:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/RijbewijsAanvraag'
- *         examens:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Rijexamen'
- *         rijlessen:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Rijles'
+ *         error:
+ *           type: string
  */
 
-const controller = require("../controller/rijbewijzen.controller.js");
-
-module.exports = function(app) {
-  app.use(function(req, res, next) {
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, Content-Type, Accept"
-    );
-    next();
-  });
-
+module.exports = (app) => {
   /**
    * @swagger
-   * /api/rijbewijs/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van rijbewijs gegevens
-   *     description: Haalt alle rijbewijs gegevens op van een persoon op basis van identificatienummer, inclusief categorieen en overtredingen
+   * /api/rijbewijzen/inschrijven_student:
+   *   post:
+   *     summary: Schrijf een student in bij een rijschool
    *     tags: [Rijbewijzen]
-   *     parameters:
-   *       - in: path
-   *         name: identificatienummer
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de houder
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/Inschrijving'
    *     responses:
-   *       200:
-   *         description: Rijbewijs gegevens succesvol opgehaald
+   *       201:
+   *         description: Student succesvol ingeschreven
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   $ref: '#/components/schemas/Rijbewijs'
+   *               $ref: '#/components/schemas/SuccessResponse'
    *       400:
-   *         description: Identificatienummer is verplicht
-   *       404:
-   *         description: Rijbewijs niet gevonden
+   *         description: Verplichte velden ontbreken
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Server fout
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get(
-    "/api/rijbewijs/:identificatienummer",
-    controller.ophaalRijbewijsGegevens
-  );
+  app.post("/api/rijbewijzen/inschrijven_student", controller.inschrijven_student);
 
   /**
    * @swagger
-   * /api/rijbewijs/aanvragen/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van rijbewijs aanvragen
-   *     description: Haalt alle rijbewijs aanvragen op van een persoon
+   * /api/rijbewijzen/inschrijving/{id}/wijzig_advies_theorie:
+   *   put:
+   *     summary: Wijzig het theorie advies van een inschrijving
    *     tags: [Rijbewijzen]
-   *     parameters:
-   *       - in: path
-   *         name: identificatienummer
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de aanvrager
-   *     responses:
-   *       200:
-   *         description: Aanvragen succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/RijbewijsAanvraag'
-   *       400:
-   *         description: Identificatienummer is verplicht
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/rijbewijs/aanvragen/:identificatienummer",
-    controller.ophaalRijbewijsAanvragen
-  );
-
-  /**
-   * @swagger
-   * /api/rijexamens/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van rijexamens
-   *     description: Haalt alle rijexamens op van een kandidaat
-   *     tags: [Examens]
-   *     parameters:
-   *       - in: path
-   *         name: identificatienummer
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de kandidaat
-   *     responses:
-   *       200:
-   *         description: Examens succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Rijexamen'
-   *       400:
-   *         description: Identificatienummer is verplicht
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/rijexamens/:identificatienummer",
-    controller.ophaalRijexamens
-  );
-
-  /**
-   * @swagger
-   * /api/rijlessen/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van rijlessen
-   *     description: Haalt alle rijlessen op van een leerling
-   *     tags: [Rijlessen]
-   *     parameters:
-   *       - in: path
-   *         name: identificatienummer
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de leerling
-   *     responses:
-   *       200:
-   *         description: Rijlessen succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Rijles'
-   *       400:
-   *         description: Identificatienummer is verplicht
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/rijlessen/:identificatienummer",
-    controller.ophaalRijlessen
-  );
-
-  /**
-   * @swagger
-   * /api/overtredingen/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van overtredingen
-   *     description: Haalt alle verkeersovertredingen op van een persoon
-   *     tags: [Overtredingen]
-   *     parameters:
-   *       - in: path
-   *         name: identificatienummer
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de overtreder
-   *     responses:
-   *       200:
-   *         description: Overtredingen succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Overtreding'
-   *       400:
-   *         description: Identificatienummer is verplicht
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/overtredingen/:identificatienummer",
-    controller.ophaalOvertredingen
-  );
-
-  /**
-   * @swagger
-   * /api/rijscholen:
-   *   get:
-   *     summary: Ophalen van alle rijscholen
-   *     description: Haalt alle rijscholen op, optioneel gefilterd op actief status
-   *     tags: [Rijscholen]
-   *     parameters:
-   *       - in: query
-   *         name: actief
-   *         schema:
-   *           type: boolean
-   *         description: Filter op actieve rijscholen (true/false)
-   *     responses:
-   *       200:
-   *         description: Rijscholen succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Rijschool'
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/rijscholen",
-    controller.ophaalRijscholen
-  );
-
-  /**
-   * @swagger
-   * /api/rijscholen/{id}:
-   *   get:
-   *     summary: Ophalen van een specifieke rijschool
-   *     description: Haalt details op van een rijschool inclusief instructeurs
-   *     tags: [Rijscholen]
    *     parameters:
    *       - in: path
    *         name: id
    *         required: true
    *         schema:
    *           type: integer
-   *         description: Het ID van de rijschool
+   *         description: ID van de inschrijving
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/AdviesTheorie'
    *     responses:
    *       200:
-   *         description: Rijschool succesvol opgehaald
+   *         description: Advies theorie succesvol bijgewerkt
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   $ref: '#/components/schemas/Rijschool'
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Verplichte velden ontbreken
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: Rijschool niet gevonden
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/rijscholen/:id",
-    controller.ophaalRijschoolById
-  );
-
-  /**
-   * @swagger
-   * /api/categorieen:
-   *   get:
-   *     summary: Ophalen van alle rijbewijs categorieen
-   *     description: Haalt alle beschikbare rijbewijs categorieen op (A, B, C, etc.)
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Categorieen succesvol opgehaald
+   *         description: Inschrijving niet gevonden
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/RijbewijsCategorie'
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/categorieen",
-    controller.ophaalCategorieen
-  );
-
-  /**
-   * @swagger
-   * /api/rijbewijs-statussen:
-   *   get:
-   *     summary: Ophalen van alle rijbewijs statussen
-   *     description: Haalt alle mogelijke rijbewijs statussen op
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Statussen succesvol opgehaald
+   *         description: Serverfout
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/RijbewijsStatus'
-   *       500:
-   *         description: Server fout
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get(
-    "/api/rijbewijs-statussen",
-    controller.ophaalStatussen
-  );
+  app.put("/api/rijbewijzen/inschrijving/:id/wijzig_advies_theorie", controller.wijzig_advies_theorie);
 
   /**
    * @swagger
-   * /api/aanvraag-statussen:
-   *   get:
-   *     summary: Ophalen van alle aanvraag statussen
-   *     description: Haalt alle mogelijke aanvraag statussen op
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Statussen succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/AanvraagStatus'
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/aanvraag-statussen",
-    controller.ophaalAanvraagStatussen
-  );
-
-  /**
-   * @swagger
-   * /api/examen-types:
-   *   get:
-   *     summary: Ophalen van alle examen types
-   *     description: Haalt alle mogelijke examen types op (theorie, praktijk, etc.)
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Examen types succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/ExamenType'
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/examen-types",
-    controller.ophaalExamenTypes
-  );
-
-  /**
-   * @swagger
-   * /api/examen-resultaten:
-   *   get:
-   *     summary: Ophalen van alle examen resultaten
-   *     description: Haalt alle mogelijke examen resultaten op (geslaagd, gezakt, etc.)
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Examen resultaten succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/ExamenResultaat'
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/examen-resultaten",
-    controller.ophaalExamenResultaten
-  );
-
-  /**
-   * @swagger
-   * /api/overtreding-types:
-   *   get:
-   *     summary: Ophalen van alle overtreding types
-   *     description: Haalt alle mogelijke overtreding types op
-   *     tags: [Referentiedata]
-   *     responses:
-   *       200:
-   *         description: Overtreding types succesvol opgehaald
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/OvertredingType'
-   *       500:
-   *         description: Server fout
-   */
-  app.get(
-    "/api/overtreding-types",
-    controller.ophaalOvertredingTypes
-  );
-
-  /**
-   * @swagger
-   * /api/dossier/{identificatienummer}:
-   *   get:
-   *     summary: Ophalen van compleet rijbewijs dossier
-   *     description: Haalt het complete rijbewijs dossier op van een persoon, inclusief rijbewijs, aanvragen, examens en rijlessen
+   * /api/rijbewijzen/inschrijving/{id}/wijzig_advies_praktijk:
+   *   put:
+   *     summary: Wijzig het praktijk advies van een inschrijving
    *     tags: [Rijbewijzen]
    *     parameters:
    *       - in: path
-   *         name: identificatienummer
+   *         name: id
    *         required: true
    *         schema:
-   *           type: string
-   *         description: Het unieke identificatienummer van de persoon
+   *           type: integer
+   *         description: ID van de inschrijving
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/AdviesPraktijk'
    *     responses:
    *       200:
-   *         description: Compleet dossier succesvol opgehaald
+   *         description: Advies praktijk succesvol bijgewerkt
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 data:
-   *                   $ref: '#/components/schemas/CompleetDossier'
+   *               $ref: '#/components/schemas/SuccessResponse'
    *       400:
-   *         description: Identificatienummer is verplicht
+   *         description: Verplichte velden ontbreken
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Inschrijving niet gevonden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Server fout
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get(
-    "/api/dossier/:identificatienummer",
-    controller.ophaalCompleetDossier
-  );
+  app.put("/api/rijbewijzen/inschrijving/:id/wijzig_advies_praktijk", controller.wijzig_advies_praktijk);
+
+  /**
+   * @swagger
+   * /api/rijbewijzen/aanmelden_student_theorie_examen:
+   *   post:
+   *     summary: Meld een student aan voor een theorie examen
+   *     description: Vereist een positief theorie advies op de inschrijving
+   *     tags: [Rijbewijzen]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ExamenAanmelding'
+   *     responses:
+   *       201:
+   *         description: Student succesvol aangemeld voor theorie examen
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Verplichte velden ontbreken of geen positief advies
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Inschrijving niet gevonden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  app.post("/api/rijbewijzen/aanmelden_student_theorie_examen", controller.aanmelden_student_theorie_examen);
+
+  /**
+   * @swagger
+   * /api/rijbewijzen/aanmelden_student_praktijk_examen:
+   *   post:
+   *     summary: Meld een student aan voor een praktijk examen
+   *     description: Vereist een positief praktijk advies op de inschrijving
+   *     tags: [Rijbewijzen]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ExamenAanmelding'
+   *     responses:
+   *       201:
+   *         description: Student succesvol aangemeld voor praktijk examen
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Verplichte velden ontbreken of geen positief advies
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Inschrijving niet gevonden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  app.post("/api/rijbewijzen/aanmelden_student_praktijk_examen", controller.aanmelden_student_praktijk_examen);
+
+  /**
+   * @swagger
+   * /api/rijbewijzen/bewaar_resultaten_theorie_examen:
+   *   post:
+   *     summary: Bewaar de resultaten van een theorie examen
+   *     description: Slaat het resultaat op en markeert de aanmelding als afgenomen
+   *     tags: [Rijbewijzen]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/TheorieResultaat'
+   *     responses:
+   *       201:
+   *         description: Theorie examenresultaat succesvol opgeslagen
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Verplichte velden ontbreken of aanmelding is niet van type theorie
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Examen aanmelding niet gevonden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  app.post("/api/rijbewijzen/bewaar_resultaten_theorie_examen", controller.bewaar_resultaten_theorie_examen);
+
+  /**
+   * @swagger
+   * /api/rijbewijzen/bewaar_resultaten_praktijk_examen:
+   *   post:
+   *     summary: Bewaar de resultaten van een praktijk examen
+   *     description: Slaat het resultaat inclusief beoordelingsdetails op en markeert de aanmelding als afgenomen
+   *     tags: [Rijbewijzen]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/PraktijkResultaat'
+   *     responses:
+   *       201:
+   *         description: Praktijk examenresultaat succesvol opgeslagen
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Verplichte velden ontbreken of aanmelding is niet van type praktijk
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Examen aanmelding niet gevonden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Serverfout
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  app.post("/api/rijbewijzen/bewaar_resultaten_praktijk_examen", controller.bewaar_resultaten_praktijk_examen);
 };

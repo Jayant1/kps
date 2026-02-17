@@ -1,24 +1,30 @@
 module.exports = (sequelize, Sequelize) => {
-  const rijscholen = sequelize.define("rijscholen", {
+  const studenten = sequelize.define("studenten", {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    naam: {
-      type: Sequelize.STRING(100),
+    identificatienummer: {
+      type: Sequelize.STRING(30),
+      unique: true,
       allowNull: false
     },
-    adres: {
-      type: Sequelize.STRING(200),
-      allowNull: true
+    geboortedatum: {
+      type: Sequelize.DATEONLY,
+      allowNull: false
+    },
+    email: {
+      type: Sequelize.STRING(100),
+      unique: true,
+      allowNull: false
     },
     telefoon: {
       type: Sequelize.STRING(20),
       allowNull: true
     },
-    email: {
-      type: Sequelize.STRING(100),
+    adres: {
+      type: Sequelize.STRING(200),
       allowNull: true
     },
     ingevoerd_door: {
@@ -42,16 +48,12 @@ module.exports = (sequelize, Sequelize) => {
     timestamps: false
   });
 
-  rijscholen.associate = function(models) {
-    rijscholen.hasMany(models.rijinstructeurs, {
-      foreignKey: 'rijschool_id',
-      as: 'instructeurs'
-    });
-    rijscholen.hasMany(models.rijschool_inschrijvingen, {
-      foreignKey: 'rijschool_id',
+  studenten.associate = function(models) {
+    studenten.hasMany(models.rijschool_inschrijvingen, {
+      foreignKey: 'student_id',
       as: 'inschrijvingen'
     });
   };
 
-  return rijscholen;
+  return studenten;
 };

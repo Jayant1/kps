@@ -1,598 +1,202 @@
 const db = require("../model/index.js");
 
-const Rijbewijzen = db.rijbewijzen;
-const RijbewijsCategorieen = db.rijbewijs_categorieen;
-const RijbewijsStatussen = db.rijbewijs_statussen;
-const RijbewijsCategorie_koppeling = db.rijbewijs_categorie_koppeling;
-const RijbewijsAanvragen = db.rijbewijs_aanvragen;
-const AanvraagStatussen = db.aanvraag_statussen;
-const Rijexamens = db.rijexamens;
-const ExamenTypes = db.examen_types;
-const ExamenResultaten = db.examen_resultaten;
-const Rijlessen = db.rijlessen;
+const Studenten = db.studenten;
 const Rijscholen = db.rijscholen;
-const Instructeurs = db.instructeurs;
-const Overtredingen = db.overtredingen;
-const OvertredingTypes = db.overtreding_types;
-const RijbewijsMutatiesLog = db.rijbewijs_mutaties_log;
+const Rijinstructeurs = db.rijinstructeurs;
+const Categorie = db.categorie;
+const RijschoolInschrijvingen = db.rijschool_inschrijvingen;
+const Examinatoren = db.examinatoren;
+const Surveillanten = db.surveillanten;
+const ExamenAanmeldingen = db.examen_aanmeldingen;
+const TheorieExamenresultaten = db.theorie_examenresultaten;
+const PraktijkExamenresultaten = db.praktijk_examenresultaten;
+const PraktijkExamenresultatenDetails = db.praktijk_examenresultaten_details;
 
-exports.ophaalRijbewijsGegevens = async (req, res) => {
+// 1. Inschrijven student bij rijschool
+exports.inschrijven_student = async (req, res) => {
   try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
+    const { student_id, rijschool_id, instructeur_id, categorie_id, inschrijfdatum, ingevoerd_door } = req.body;
+    if (!student_id || !rijschool_id || !categorie_id || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "student_id, rijschool_id, categorie_id en ingevoerd_door zijn verplicht" });
     }
-
-    const rijbewijs = await Rijbewijzen.findOne({
-      where: { identificatienummer_houder: identificatienummer },
-      include: [
-        {
-          model: RijbewijsStatussen,
-          as: 'status',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: RijbewijsCategorie_koppeling,
-          as: 'categorieen',
-          include: [
-            {
-              model: RijbewijsCategorieen,
-              as: 'categorie',
-              attributes: ['id', 'code', 'omschrijving', 'min_leeftijd']
-            }
-          ]
-        },
-        {
-          model: Overtredingen,
-          as: 'overtredingen',
-          include: [
-            {
-              model: OvertredingTypes,
-              as: 'overtreding_type',
-              attributes: ['id', 'code', 'omschrijving']
-            }
-          ]
-        }
-      ]
+    const inschrijving = await RijschoolInschrijvingen.create({
+      student_id,
+      rijschool_id,
+      instructeur_id,
+      categorie_id,
+      inschrijfdatum: inschrijfdatum || new Date(),
+      ingevoerd_door
     });
-
-    if (!rijbewijs) {
-      return res.status(404).json({
-        success: false,
-        message: "Rijbewijs niet gevonden voor dit identificatienummer"
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: rijbewijs
-    });
-
+    return res.status(201).json({ success: true, data: inschrijving });
   } catch (error) {
-    console.error("Error ophalen rijbewijs gegevens:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijbewijs gegevens",
-      error: error.message
-    });
+    console.error("Error inschrijven student:", error);
+    return res.status(500).json({ success: false, message: "Fout bij inschrijven van student", error: error.message });
   }
 };
 
-exports.ophaalRijbewijsAanvragen = async (req, res) => {
-  try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
-    }
-
-    const aanvragen = await RijbewijsAanvragen.findAll({
-      where: { identificatienummer_aanvrager: identificatienummer },
-      include: [
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        },
-        {
-          model: AanvraagStatussen,
-          as: 'status',
-          attributes: ['id', 'naam']
-        }
-      ],
-      order: [['aanvraag_datum', 'DESC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: aanvragen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen aanvragen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijbewijs aanvragen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalRijexamens = async (req, res) => {
-  try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
-    }
-
-    const examens = await Rijexamens.findAll({
-      where: { identificatienummer_kandidaat: identificatienummer },
-      include: [
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        },
-        {
-          model: ExamenTypes,
-          as: 'examen_type',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: ExamenResultaten,
-          as: 'resultaat',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: Instructeurs,
-          as: 'instructeur',
-          attributes: ['id', 'identificatienummer_instructeur', 'certificaat_nummer'],
-          include: [
-            {
-              model: Rijscholen,
-              as: 'rijschool',
-              attributes: ['id', 'naam']
-            }
-          ]
-        }
-      ],
-      order: [['examen_datum', 'DESC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: examens
-    });
-
-  } catch (error) {
-    console.error("Error ophalen examens:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijexamens",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalRijlessen = async (req, res) => {
-  try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
-    }
-
-    const lessen = await Rijlessen.findAll({
-      where: { identificatienummer_leerling: identificatienummer },
-      include: [
-        {
-          model: Rijscholen,
-          as: 'rijschool',
-          attributes: ['id', 'naam', 'adres', 'telefoon']
-        },
-        {
-          model: Instructeurs,
-          as: 'instructeur',
-          attributes: ['id', 'identificatienummer_instructeur', 'certificaat_nummer']
-        },
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        }
-      ],
-      order: [['les_datum', 'DESC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: lessen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen rijlessen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijlessen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalOvertredingen = async (req, res) => {
-  try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
-    }
-
-    const overtredingen = await Overtredingen.findAll({
-      where: { identificatienummer_overtreder: identificatienummer },
-      include: [
-        {
-          model: Rijbewijzen,
-          as: 'rijbewijs',
-          attributes: ['id', 'rijbewijs_nummer', 'uitgiftedatum', 'vervaldatum']
-        },
-        {
-          model: OvertredingTypes,
-          as: 'overtreding_type',
-          attributes: ['id', 'code', 'omschrijving']
-        }
-      ],
-      order: [['overtreding_datum', 'DESC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: overtredingen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen overtredingen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van overtredingen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalRijscholen = async (req, res) => {
-  try {
-    const { actief } = req.query;
-
-    const whereClause = {};
-    if (actief !== undefined) {
-      whereClause.actief = actief === 'true' ? 1 : 0;
-    }
-
-    const rijscholen = await Rijscholen.findAll({
-      where: whereClause,
-      include: [
-        {
-          model: Instructeurs,
-          as: 'instructeurs',
-          where: { actief: 1 },
-          required: false,
-          attributes: ['id', 'identificatienummer_instructeur', 'certificaat_nummer', 'bevoegde_categorieen']
-        }
-      ],
-      order: [['naam', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: rijscholen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen rijscholen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijscholen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalRijschoolById = async (req, res) => {
+// 2. Wijzig advies theorie
+exports.wijzig_advies_theorie = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const rijschool = await Rijscholen.findByPk(id, {
-      include: [
-        {
-          model: Instructeurs,
-          as: 'instructeurs',
-          attributes: ['id', 'identificatienummer_instructeur', 'certificaat_nummer', 'certificaat_geldig_tot', 'bevoegde_categorieen', 'actief']
-        }
-      ]
-    });
-
-    if (!rijschool) {
-      return res.status(404).json({
-        success: false,
-        message: "Rijschool niet gevonden"
-      });
+    const { advies_theorie, advies_theorie_datum, gewijzigd_door } = req.body;
+    if (!advies_theorie || !gewijzigd_door) {
+      return res.status(400).json({ success: false, message: "advies_theorie en gewijzigd_door zijn verplicht" });
     }
-
-    return res.status(200).json({
-      success: true,
-      data: rijschool
-    });
-
-  } catch (error) {
-    console.error("Error ophalen rijschool:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijschool",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalCategorieen = async (req, res) => {
-  try {
-    const categorieen = await RijbewijsCategorieen.findAll({
-      order: [['code', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: categorieen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen categorieen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijbewijs categorieen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalStatussen = async (req, res) => {
-  try {
-    const statussen = await RijbewijsStatussen.findAll({
-      order: [['naam', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: statussen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen statussen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van rijbewijs statussen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalAanvraagStatussen = async (req, res) => {
-  try {
-    const statussen = await AanvraagStatussen.findAll({
-      order: [['naam', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: statussen
-    });
-
-  } catch (error) {
-    console.error("Error ophalen aanvraag statussen:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van aanvraag statussen",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalExamenTypes = async (req, res) => {
-  try {
-    const types = await ExamenTypes.findAll({
-      order: [['naam', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: types
-    });
-
-  } catch (error) {
-    console.error("Error ophalen examen types:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van examen types",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalExamenResultaten = async (req, res) => {
-  try {
-    const resultaten = await ExamenResultaten.findAll({
-      order: [['naam', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: resultaten
-    });
-
-  } catch (error) {
-    console.error("Error ophalen examen resultaten:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van examen resultaten",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalOvertredingTypes = async (req, res) => {
-  try {
-    const types = await OvertredingTypes.findAll({
-      order: [['code', 'ASC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: types
-    });
-
-  } catch (error) {
-    console.error("Error ophalen overtreding types:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van overtreding types",
-      error: error.message
-    });
-  }
-};
-
-exports.ophaalCompleetDossier = async (req, res) => {
-  try {
-    const { identificatienummer } = req.params;
-
-    if (!identificatienummer) {
-      return res.status(400).json({
-        success: false,
-        message: "Identificatienummer is verplicht"
-      });
+    const inschrijving = await RijschoolInschrijvingen.findByPk(id);
+    if (!inschrijving) {
+      return res.status(404).json({ success: false, message: "Inschrijving niet gevonden" });
     }
-
-    const rijbewijs = await Rijbewijzen.findOne({
-      where: { identificatienummer_houder: identificatienummer },
-      include: [
-        {
-          model: RijbewijsStatussen,
-          as: 'status',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: RijbewijsCategorie_koppeling,
-          as: 'categorieen',
-          include: [
-            {
-              model: RijbewijsCategorieen,
-              as: 'categorie',
-              attributes: ['id', 'code', 'omschrijving', 'min_leeftijd']
-            }
-          ]
-        },
-        {
-          model: Overtredingen,
-          as: 'overtredingen',
-          include: [
-            {
-              model: OvertredingTypes,
-              as: 'overtreding_type',
-              attributes: ['id', 'code', 'omschrijving']
-            }
-          ]
-        }
-      ]
-    });
-
-    const aanvragen = await RijbewijsAanvragen.findAll({
-      where: { identificatienummer_aanvrager: identificatienummer },
-      include: [
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        },
-        {
-          model: AanvraagStatussen,
-          as: 'status',
-          attributes: ['id', 'naam']
-        }
-      ],
-      order: [['aanvraag_datum', 'DESC']]
-    });
-
-    const examens = await Rijexamens.findAll({
-      where: { identificatienummer_kandidaat: identificatienummer },
-      include: [
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        },
-        {
-          model: ExamenTypes,
-          as: 'examen_type',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: ExamenResultaten,
-          as: 'resultaat',
-          attributes: ['id', 'naam']
-        }
-      ],
-      order: [['examen_datum', 'DESC']]
-    });
-
-    const lessen = await Rijlessen.findAll({
-      where: { identificatienummer_leerling: identificatienummer },
-      include: [
-        {
-          model: Rijscholen,
-          as: 'rijschool',
-          attributes: ['id', 'naam']
-        },
-        {
-          model: RijbewijsCategorieen,
-          as: 'categorie',
-          attributes: ['id', 'code', 'omschrijving']
-        }
-      ],
-      order: [['les_datum', 'DESC']]
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        identificatienummer: identificatienummer,
-        rijbewijs: rijbewijs,
-        aanvragen: aanvragen,
-        examens: examens,
-        rijlessen: lessen
-      }
-    });
-
+    await inschrijving.update({ advies_theorie, advies_theorie_datum, gewijzigd_door, datum_gewijzigd: new Date() });
+    return res.status(200).json({ success: true, data: inschrijving });
   } catch (error) {
-    console.error("Error ophalen compleet dossier:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Fout bij ophalen van compleet rijbewijs dossier",
-      error: error.message
+    console.error("Error wijzigen advies theorie:", error);
+    return res.status(500).json({ success: false, message: "Fout bij wijzigen van advies theorie", error: error.message });
+  }
+};
+
+// 3. Wijzig advies praktijk
+exports.wijzig_advies_praktijk = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { advies_praktijk, advies_praktijk_datum, gewijzigd_door } = req.body;
+    if (!advies_praktijk || !gewijzigd_door) {
+      return res.status(400).json({ success: false, message: "advies_praktijk en gewijzigd_door zijn verplicht" });
+    }
+    const inschrijving = await RijschoolInschrijvingen.findByPk(id);
+    if (!inschrijving) {
+      return res.status(404).json({ success: false, message: "Inschrijving niet gevonden" });
+    }
+    await inschrijving.update({ advies_praktijk, advies_praktijk_datum, gewijzigd_door, datum_gewijzigd: new Date() });
+    return res.status(200).json({ success: true, data: inschrijving });
+  } catch (error) {
+    console.error("Error wijzigen advies praktijk:", error);
+    return res.status(500).json({ success: false, message: "Fout bij wijzigen van advies praktijk", error: error.message });
+  }
+};
+
+// 4. Aanmelden student voor theorie examen
+exports.aanmelden_student_theorie_examen = async (req, res) => {
+  try {
+    const { inschrijving_id, gekozen_datum, locatie, ingevoerd_door } = req.body;
+    if (!inschrijving_id || !gekozen_datum || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "inschrijving_id, gekozen_datum en ingevoerd_door zijn verplicht" });
+    }
+    const inschrijving = await RijschoolInschrijvingen.findByPk(inschrijving_id);
+    if (!inschrijving) {
+      return res.status(404).json({ success: false, message: "Inschrijving niet gevonden" });
+    }
+    if (inschrijving.advies_theorie !== 'positief') {
+      return res.status(400).json({ success: false, message: "Student heeft geen positief advies voor theorie examen" });
+    }
+    const aanmelding = await ExamenAanmeldingen.create({
+      inschrijving_id,
+      examen_type: 'theorie',
+      gekozen_datum,
+      locatie,
+      ingevoerd_door
     });
+    return res.status(201).json({ success: true, data: aanmelding });
+  } catch (error) {
+    console.error("Error aanmelden theorie examen:", error);
+    return res.status(500).json({ success: false, message: "Fout bij aanmelden voor theorie examen", error: error.message });
+  }
+};
+
+// 5. Aanmelden student voor praktijk examen
+exports.aanmelden_student_praktijk_examen = async (req, res) => {
+  try {
+    const { inschrijving_id, gekozen_datum, locatie, ingevoerd_door } = req.body;
+    if (!inschrijving_id || !gekozen_datum || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "inschrijving_id, gekozen_datum en ingevoerd_door zijn verplicht" });
+    }
+    const inschrijving = await RijschoolInschrijvingen.findByPk(inschrijving_id);
+    if (!inschrijving) {
+      return res.status(404).json({ success: false, message: "Inschrijving niet gevonden" });
+    }
+    if (inschrijving.advies_praktijk !== 'positief') {
+      return res.status(400).json({ success: false, message: "Student heeft geen positief advies voor praktijk examen" });
+    }
+    const aanmelding = await ExamenAanmeldingen.create({
+      inschrijving_id,
+      examen_type: 'praktijk',
+      gekozen_datum,
+      locatie,
+      ingevoerd_door
+    });
+    return res.status(201).json({ success: true, data: aanmelding });
+  } catch (error) {
+    console.error("Error aanmelden praktijk examen:", error);
+    return res.status(500).json({ success: false, message: "Fout bij aanmelden voor praktijk examen", error: error.message });
+  }
+};
+
+// 6. Bewaar resultaten theorie examen
+exports.bewaar_resultaten_theorie_examen = async (req, res) => {
+  try {
+    const { aanmelding_id, surveillant_id, afgenomen_op, score, max_score, geslaagd, opmerkingen, ingevoerd_door } = req.body;
+    if (!aanmelding_id || !afgenomen_op || geslaagd === undefined || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "aanmelding_id, afgenomen_op, geslaagd en ingevoerd_door zijn verplicht" });
+    }
+    const aanmelding = await ExamenAanmeldingen.findByPk(aanmelding_id);
+    if (!aanmelding) {
+      return res.status(404).json({ success: false, message: "Examen aanmelding niet gevonden" });
+    }
+    if (aanmelding.examen_type !== 'theorie') {
+      return res.status(400).json({ success: false, message: "Aanmelding is niet van het type theorie" });
+    }
+    const resultaat = await TheorieExamenresultaten.create({
+      aanmelding_id,
+      surveillant_id,
+      afgenomen_op,
+      score,
+      max_score,
+      geslaagd,
+      opmerkingen,
+      ingevoerd_door
+    });
+    await aanmelding.update({ status: 'afgenomen', gewijzigd_door: ingevoerd_door, datum_gewijzigd: new Date() });
+    return res.status(201).json({ success: true, data: resultaat });
+  } catch (error) {
+    console.error("Error bewaren theorie resultaten:", error);
+    return res.status(500).json({ success: false, message: "Fout bij bewaren van theorie examenresultaten", error: error.message });
+  }
+};
+
+// 7. Bewaar resultaten praktijk examen
+exports.bewaar_resultaten_praktijk_examen = async (req, res) => {
+  try {
+    const { aanmelding_id, examinator_id, afgenomen_op, route_omschrijving, rijtijd_minuten, geslaagd, opmerkingen, ingevoerd_door, details } = req.body;
+    if (!aanmelding_id || !examinator_id || !afgenomen_op || geslaagd === undefined || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "aanmelding_id, examinator_id, afgenomen_op, geslaagd en ingevoerd_door zijn verplicht" });
+    }
+    const aanmelding = await ExamenAanmeldingen.findByPk(aanmelding_id);
+    if (!aanmelding) {
+      return res.status(404).json({ success: false, message: "Examen aanmelding niet gevonden" });
+    }
+    if (aanmelding.examen_type !== 'praktijk') {
+      return res.status(400).json({ success: false, message: "Aanmelding is niet van het type praktijk" });
+    }
+    const resultaat = await PraktijkExamenresultaten.create({
+      aanmelding_id,
+      examinator_id,
+      afgenomen_op,
+      route_omschrijving,
+      rijtijd_minuten,
+      geslaagd,
+      opmerkingen,
+      ingevoerd_door
+    });
+    if (details && Array.isArray(details) && details.length > 0) {
+      const detailRecords = details.map(d => ({ ...d, praktijk_resultaat_id: resultaat.id, ingevoerd_door }));
+      await PraktijkExamenresultatenDetails.bulkCreate(detailRecords);
+    }
+    await aanmelding.update({ status: 'afgenomen', gewijzigd_door: ingevoerd_door, datum_gewijzigd: new Date() });
+    const volledigResultaat = await PraktijkExamenresultaten.findByPk(resultaat.id, {
+      include: [{ model: PraktijkExamenresultatenDetails, as: 'details' }]
+    });
+    return res.status(201).json({ success: true, data: volledigResultaat });
+  } catch (error) {
+    console.error("Error bewaren praktijk resultaten:", error);
+    return res.status(500).json({ success: false, message: "Fout bij bewaren van praktijk examenresultaten", error: error.message });
   }
 };
