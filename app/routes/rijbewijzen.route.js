@@ -24,7 +24,7 @@ const controller = require("../controller/rijbewijzen.controller.js");
  *         student_identificatienummer:
  *           type: string
  *           description: Identificatienummer van de student
- *           example: ST-19950312-001
+ *           example: IC010001
  *         student_geboortedatum:
  *           type: string
  *           format: date
@@ -248,7 +248,7 @@ module.exports = (app) => {
  *             bestaande_student:
  *               summary: Inschrijving van bestaande student
  *               value:
- *                 student_identificatienummer: "ST-19950312-001"
+ *                 student_identificatienummer: "IC010001"
  *                 student_geboortedatum: "1995-03-12"
  *                 student_email: "aisha.ramdien@email.sr"
  *                 rijschool_naam: "Rijschool De Palmboom"
@@ -259,7 +259,7 @@ module.exports = (app) => {
  *             nieuwe_student:
  *               summary: Inschrijving met automatisch aanmaken van nieuwe student
  *               value:
- *                 student_identificatienummer: "ST-20040101-007"
+ *                 student_identificatienummer: "IC010007"
  *                 student_geboortedatum: "2004-01-01"
  *                 student_email: "nieuw.student@email.sr"
  *                 student_telefoon: "597-611007"

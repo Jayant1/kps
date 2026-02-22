@@ -251,20 +251,20 @@ SELECT setval('examinatoren_id_seq', (SELECT MAX(id) FROM examinatoren));
 
 -- Surveillanten
 INSERT INTO surveillanten (id, identificatienummer, badge_nr, ingevoerd_door, datum_ingevoerd) VALUES
-(1, 'SV001001', 'BADGE-SV-001', 'SYSTEEM', CURRENT_TIMESTAMP),
-(2, 'SV001002', 'BADGE-SV-002', 'SYSTEEM', CURRENT_TIMESTAMP),
-(3, 'SV001003', 'BADGE-SV-003', 'SYSTEEM', CURRENT_TIMESTAMP);
+(1, 'IC005101', 'BADGE-SV-001', 'SYSTEEM', CURRENT_TIMESTAMP),
+(2, 'IC005202', 'BADGE-SV-002', 'SYSTEEM', CURRENT_TIMESTAMP),
+(3, 'IC005303', 'BADGE-SV-003', 'SYSTEEM', CURRENT_TIMESTAMP);
 
 SELECT setval('surveillanten_id_seq', (SELECT MAX(id) FROM surveillanten));
 
 -- Studenten
 INSERT INTO studenten (id, identificatienummer, geboortedatum, email, telefoon, adres, ingevoerd_door, datum_ingevoerd) VALUES
-(1, 'ST-19950312-001', '1995-03-12', 'aisha.ramdien@email.sr',  '597-611001', 'Hofstraat 5, Paramaribo',              'SYSTEEM', CURRENT_TIMESTAMP),
-(2, 'ST-19981107-002', '1998-11-07', 'kevin.brunings@email.sr', '597-611002', 'Zwartenhovenbrugstraat 22, Paramaribo', 'SYSTEEM', CURRENT_TIMESTAMP),
-(3, 'ST-20010225-003', '2001-02-25', 'priya.sewdien@email.sr',  '597-611003', 'Verlengde Gemenelandsweg 10, Para',     'SYSTEEM', CURRENT_TIMESTAMP),
-(4, 'ST-19920814-004', '1992-08-14', 'marco.telgt@email.sr',    '597-611004', 'Henck Arronstraat 77, Paramaribo',      'SYSTEEM', CURRENT_TIMESTAMP),
-(5, 'ST-20030601-005', '2003-06-01', 'fatima.alibaks@email.sr', '597-611005', 'Domineestraat 33, Paramaribo',          'SYSTEEM', CURRENT_TIMESTAMP),
-(6, 'ST-19991230-006', '1999-12-30', 'dion.pinas@email.sr',     '597-611006', 'Kwattaweg 120, Paramaribo',             'SYSTEEM', CURRENT_TIMESTAMP);
+(1, 'IC010001', '1995-03-12', 'aisha.ramdien@email.sr',  '597-611001', 'Hofstraat 5, Paramaribo',              'SYSTEEM', CURRENT_TIMESTAMP),
+(2, 'IC010002', '1998-11-07', 'kevin.brunings@email.sr', '597-611002', 'Zwartenhovenbrugstraat 22, Paramaribo', 'SYSTEEM', CURRENT_TIMESTAMP),
+(3, 'IC010003', '2001-02-25', 'priya.sewdien@email.sr',  '597-611003', 'Verlengde Gemenelandsweg 10, Para',     'SYSTEEM', CURRENT_TIMESTAMP),
+(4, 'IC010004', '1992-08-14', 'marco.telgt@email.sr',    '597-611004', 'Henck Arronstraat 77, Paramaribo',      'SYSTEEM', CURRENT_TIMESTAMP),
+(5, 'IC010005', '2003-06-01', 'fatima.alibaks@email.sr', '597-611005', 'Domineestraat 33, Paramaribo',          'SYSTEEM', CURRENT_TIMESTAMP),
+(6, 'IC010006', '1999-12-30', 'dion.pinas@email.sr',     '597-611006', 'Kwattaweg 120, Paramaribo',             'SYSTEEM', CURRENT_TIMESTAMP);
 
 SELECT setval('studenten_id_seq', (SELECT MAX(id) FROM studenten));
 
