@@ -40,20 +40,22 @@ const swaggerOptions = {
         email: 'admin@kps.egov.com'
       }
     },
-    servers: [
-      {
-        url: 'https://api-kps.gov.sr:3000',
-        description: 'Sandbox omgeving'
-      }
-    ]
+    servers: []
   },
   apis: [path.join(__dirname, 'routes', '*.js')] // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Swagger UI endpoint
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Swagger UI endpoint - dynamische server URL gebaseerd op inkomend request
+app.use('/api/docs', swaggerUi.serve, (req, res, next) => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  const dynamicSpec = Object.assign({}, swaggerSpec, {
+    servers: [{ url: `${protocol}://${host}`, description: 'Huidige omgeving' }]
+  });
+  swaggerUi.setup(dynamicSpec)(req, res, next);
+});
 
 // OpenAPI spec endpoint voor X-Road
 app.get('/api/openapi.json', (req, res) => {

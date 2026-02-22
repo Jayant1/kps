@@ -14,23 +14,47 @@ const controller = require("../controller/rijbewijzen.controller.js");
  *     Inschrijving:
  *       type: object
  *       required:
- *         - student_id
- *         - rijschool_id
- *         - categorie_id
+ *         - student_identificatienummer
+ *         - student_geboortedatum
+ *         - student_email
+ *         - rijschool_naam
+ *         - categorie_code
  *         - ingevoerd_door
  *       properties:
- *         student_id:
- *           type: integer
- *           description: ID van de student
- *         rijschool_id:
- *           type: integer
- *           description: ID van de rijschool
- *         instructeur_id:
- *           type: integer
- *           description: ID van de instructeur (optioneel)
- *         categorie_id:
- *           type: integer
- *           description: ID van de rijbewijscategorie
+ *         student_identificatienummer:
+ *           type: string
+ *           description: Identificatienummer van de student
+ *           example: ST-19950312-001
+ *         student_geboortedatum:
+ *           type: string
+ *           format: date
+ *           description: Geboortedatum van de student (verplicht als student nog niet bestaat)
+ *           example: "1995-03-12"
+ *         student_email:
+ *           type: string
+ *           format: email
+ *           description: E-mailadres van de student (verplicht als student nog niet bestaat)
+ *           example: aisha.ramdien@email.sr
+ *         student_telefoon:
+ *           type: string
+ *           description: Telefoonnummer van de student (optioneel)
+ *           example: "597-611001"
+ *         student_adres:
+ *           type: string
+ *           description: Adres van de student (optioneel)
+ *           example: Hofstraat 5, Paramaribo
+ *         rijschool_naam:
+ *           type: string
+ *           description: Naam van de rijschool
+ *           example: Rijschool De Palmboom
+ *         instructeur_identificatienummer:
+ *           type: string
+ *           description: Identificatienummer van de instructeur (optioneel)
+ *           example: IC001985
+ *         categorie_code:
+ *           type: string
+ *           description: Code van de rijbewijscategorie (bijv. B, A, C)
+ *           example: B
  *         inschrijfdatum:
  *           type: string
  *           format: date
@@ -207,34 +231,72 @@ module.exports = (app) => {
    * @swagger
    * /api/rijbewijzen/inschrijven_student:
    *   post:
-   *     summary: Schrijf een student in bij een rijschool
-   *     tags: [Rijbewijzen]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/Inschrijving'
-   *     responses:
-   *       201:
-   *         description: Student succesvol ingeschreven
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/SuccessResponse'
-   *       400:
-   *         description: Verplichte velden ontbreken
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
-   *       500:
-   *         description: Serverfout
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
-   */
+ *     summary: Schrijf een student in bij een rijschool
+ *     description: |
+ *       Schrijft een student in bij een rijschool voor een bepaalde rijbewijscategorie.
+ *       Als de student nog niet bestaat in het systeem, wordt deze automatisch aangemaakt.
+ *       In dat geval zijn `student_geboortedatum` en `student_email` verplicht.
+ *       De instructeur is optioneel, maar moet wel verbonden zijn aan de opgegeven rijschool.
+ *     tags: [Rijbewijzen]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Inschrijving'
+ *           examples:
+ *             bestaande_student:
+ *               summary: Inschrijving van bestaande student
+ *               value:
+ *                 student_identificatienummer: "ST-19950312-001"
+ *                 student_geboortedatum: "1995-03-12"
+ *                 student_email: "aisha.ramdien@email.sr"
+ *                 rijschool_naam: "Rijschool De Palmboom"
+ *                 instructeur_identificatienummer: "IC001985"
+ *                 categorie_code: "B"
+ *                 inschrijfdatum: "2026-02-22"
+ *                 ingevoerd_door: "SYSTEEM"
+ *             nieuwe_student:
+ *               summary: Inschrijving met automatisch aanmaken van nieuwe student
+ *               value:
+ *                 student_identificatienummer: "ST-20040101-007"
+ *                 student_geboortedatum: "2004-01-01"
+ *                 student_email: "nieuw.student@email.sr"
+ *                 student_telefoon: "597-611007"
+ *                 student_adres: "Waterkant 10, Paramaribo"
+ *                 rijschool_naam: "Rijschool De Palmboom"
+ *                 instructeur_identificatienummer: "IC001985"
+ *                 categorie_code: "B"
+ *                 inschrijfdatum: "2026-02-22"
+ *                 ingevoerd_door: "SYSTEEM"
+ *     responses:
+ *       201:
+ *         description: Student succesvol ingeschreven (en eventueel aangemaakt)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: |
+ *           Verplichte velden ontbreken, student niet gevonden zonder student_geboortedatum/student_email,
+ *           of instructeur behoort niet tot de opgegeven rijschool
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Rijschool, categorie of instructeur niet gevonden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Serverfout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *   */
   app.post("/api/rijbewijzen/inschrijven_student", controller.inschrijven_student);
 
   /**

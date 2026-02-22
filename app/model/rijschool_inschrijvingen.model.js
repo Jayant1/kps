@@ -29,7 +29,8 @@ module.exports = (sequelize, Sequelize) => {
     advies_theorie: {
       type: Sequelize.ENUM('positief', 'negatief', 'in_behandeling'),
       allowNull: false,
-      defaultValue: 'in_behandeling'
+      defaultValue: 'in_behandeling',
+      values: ['positief', 'negatief', 'in_behandeling']
     },
     advies_theorie_datum: {
       type: Sequelize.DATEONLY,
@@ -38,7 +39,8 @@ module.exports = (sequelize, Sequelize) => {
     advies_praktijk: {
       type: Sequelize.ENUM('positief', 'negatief', 'in_behandeling'),
       allowNull: false,
-      defaultValue: 'in_behandeling'
+      defaultValue: 'in_behandeling',
+      values: ['positief', 'negatief', 'in_behandeling']
     },
     advies_praktijk_datum: {
       type: Sequelize.DATEONLY,

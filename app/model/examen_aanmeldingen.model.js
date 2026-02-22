@@ -11,7 +11,8 @@ module.exports = (sequelize, Sequelize) => {
     },
     examen_type: {
       type: Sequelize.ENUM('theorie', 'praktijk'),
-      allowNull: false
+      allowNull: false,
+      values: ['theorie', 'praktijk']
     },
     gekozen_datum: {
       type: Sequelize.DATE,
@@ -29,7 +30,8 @@ module.exports = (sequelize, Sequelize) => {
     status: {
       type: Sequelize.ENUM('gepland', 'afgenomen', 'geannuleerd'),
       allowNull: false,
-      defaultValue: 'gepland'
+      defaultValue: 'gepland',
+      values: ['gepland', 'afgenomen', 'geannuleerd']
     },
     ingevoerd_door: {
       type: Sequelize.STRING(50),

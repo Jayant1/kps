@@ -24,11 +24,13 @@ module.exports = (sequelize, Sequelize) => {
         'bijzondere_verrichtingen',
         'attitude'
       ),
-      allowNull: true
+      allowNull: true,
+      values: ['verkeersdeelname', 'voertuigbeheersing', 'bijzondere_verrichtingen', 'attitude']
     },
     resultaat: {
       type: Sequelize.ENUM('goed', 'fout', 'gevaarlijk'),
-      allowNull: false
+      allowNull: false,
+      values: ['goed', 'fout', 'gevaarlijk']
     },
     notitie: {
       type: Sequelize.TEXT,

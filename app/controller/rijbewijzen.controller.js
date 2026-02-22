@@ -15,15 +15,57 @@ const PraktijkExamenresultatenDetails = db.praktijk_examenresultaten_details;
 // 1. Inschrijven student bij rijschool
 exports.inschrijven_student = async (req, res) => {
   try {
-    const { student_id, rijschool_id, instructeur_id, categorie_id, inschrijfdatum, ingevoerd_door } = req.body;
-    if (!student_id || !rijschool_id || !categorie_id || !ingevoerd_door) {
-      return res.status(400).json({ success: false, message: "student_id, rijschool_id, categorie_id en ingevoerd_door zijn verplicht" });
+    const {
+      student_identificatienummer, student_geboortedatum, student_email, student_telefoon, student_adres,
+      instructeur_identificatienummer, rijschool_naam, categorie_code, inschrijfdatum, ingevoerd_door
+    } = req.body;
+
+    if (!student_identificatienummer || !rijschool_naam || !categorie_code || !ingevoerd_door) {
+      return res.status(400).json({ success: false, message: "student_identificatienummer, rijschool_naam, categorie_code en ingevoerd_door zijn verplicht" });
     }
+
+    let student = await Studenten.findOne({ where: { identificatienummer: student_identificatienummer } });
+    if (!student) {
+      if (!student_geboortedatum || !student_email) {
+        return res.status(400).json({ success: false, message: `Student '${student_identificatienummer}' niet gevonden. Stuur ook student_geboortedatum en student_email mee om de student aan te maken` });
+      }
+      student = await Studenten.create({
+        identificatienummer: student_identificatienummer,
+        geboortedatum: student_geboortedatum,
+        email: student_email,
+        telefoon: student_telefoon || null,
+        adres: student_adres || null,
+        ingevoerd_door
+      });
+    }
+
+    const rijschool = await Rijscholen.findOne({ where: { naam: rijschool_naam } });
+    if (!rijschool) {
+      return res.status(404).json({ success: false, message: `Rijschool met naam '${rijschool_naam}' niet gevonden` });
+    }
+
+    const categorie = await Categorie.findOne({ where: { code: categorie_code } });
+    if (!categorie) {
+      return res.status(404).json({ success: false, message: `Categorie met code '${categorie_code}' niet gevonden` });
+    }
+
+    let instructeur_id = null;
+    if (instructeur_identificatienummer) {
+      const instructeur = await Rijinstructeurs.findOne({ where: { identificatienummer: instructeur_identificatienummer } });
+      if (!instructeur) {
+        return res.status(404).json({ success: false, message: `Instructeur met identificatienummer '${instructeur_identificatienummer}' niet gevonden` });
+      }
+      if (instructeur.rijschool_id !== rijschool.id) {
+        return res.status(400).json({ success: false, message: `Instructeur '${instructeur_identificatienummer}' is niet verbonden aan rijschool '${rijschool_naam}'` });
+      }
+      instructeur_id = instructeur.id;
+    }
+
     const inschrijving = await RijschoolInschrijvingen.create({
-      student_id,
-      rijschool_id,
+      student_id: student.id,
+      rijschool_id: rijschool.id,
       instructeur_id,
-      categorie_id,
+      categorie_id: categorie.id,
       inschrijfdatum: inschrijfdatum || new Date(),
       ingevoerd_door
     });
