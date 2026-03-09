@@ -229,7 +229,7 @@ const controller = require("../controller/rijbewijzen.controller.js");
 module.exports = (app) => {
   /**
    * @swagger
-   * /api/rijbewijzen/inschrijven_student:
+   * /api/inschrijven_student:
    *   post:
  *     summary: Schrijf een student in bij een rijschool
  *     description: |
@@ -297,11 +297,11 @@ module.exports = (app) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   */
-  app.post("/api/rijbewijzen/inschrijven_student", controller.inschrijven_student);
+  app.post("/api/inschrijven_student", controller.inschrijven_student);
 
   /**
    * @swagger
-   * /api/rijbewijzen/inschrijving/{id}/wijzig_advies_theorie:
+   * /api/inschrijving/{id}/wijzig_advies_theorie:
    *   put:
    *     summary: Wijzig het theorie advies van een inschrijving
    *     tags: [Rijbewijzen]
@@ -344,11 +344,11 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.put("/api/rijbewijzen/inschrijving/:id/wijzig_advies_theorie", controller.wijzig_advies_theorie);
+  app.put("/api/inschrijving/:id/wijzig_advies_theorie", controller.wijzig_advies_theorie);
 
   /**
    * @swagger
-   * /api/rijbewijzen/inschrijving/{id}/wijzig_advies_praktijk:
+   * /api/inschrijving/{id}/wijzig_advies_praktijk:
    *   put:
    *     summary: Wijzig het praktijk advies van een inschrijving
    *     tags: [Rijbewijzen]
@@ -391,11 +391,11 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.put("/api/rijbewijzen/inschrijving/:id/wijzig_advies_praktijk", controller.wijzig_advies_praktijk);
+  app.put("/api/inschrijving/:id/wijzig_advies_praktijk", controller.wijzig_advies_praktijk);
 
   /**
    * @swagger
-   * /api/rijbewijzen/aanmelden_student_theorie_examen:
+   * /api/aanmelden_student_theorie_examen:
    *   post:
    *     summary: Meld een student aan voor een theorie examen
    *     description: Vereist een positief theorie advies op de inschrijving
@@ -432,11 +432,11 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post("/api/rijbewijzen/aanmelden_student_theorie_examen", controller.aanmelden_student_theorie_examen);
+  app.post("/api/aanmelden_student_theorie_examen", controller.aanmelden_student_theorie_examen);
 
   /**
    * @swagger
-   * /api/rijbewijzen/aanmelden_student_praktijk_examen:
+   * /api/aanmelden_student_praktijk_examen:
    *   post:
    *     summary: Meld een student aan voor een praktijk examen
    *     description: Vereist een positief praktijk advies op de inschrijving
@@ -473,11 +473,11 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post("/api/rijbewijzen/aanmelden_student_praktijk_examen", controller.aanmelden_student_praktijk_examen);
+  app.post("/api/aanmelden_student_praktijk_examen", controller.aanmelden_student_praktijk_examen);
 
   /**
    * @swagger
-   * /api/rijbewijzen/bewaar_resultaten_theorie_examen:
+   * /api/bewaar_resultaten_theorie_examen:
    *   post:
    *     summary: Bewaar de resultaten van een theorie examen
    *     description: Slaat het resultaat op en markeert de aanmelding als afgenomen
@@ -514,11 +514,11 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post("/api/rijbewijzen/bewaar_resultaten_theorie_examen", controller.bewaar_resultaten_theorie_examen);
+  app.post("/api/bewaar_resultaten_theorie_examen", controller.bewaar_resultaten_theorie_examen);
 
   /**
    * @swagger
-   * /api/rijbewijzen/bewaar_resultaten_praktijk_examen:
+   * /api/bewaar_resultaten_praktijk_examen:
    *   post:
    *     summary: Bewaar de resultaten van een praktijk examen
    *     description: Slaat het resultaat inclusief beoordelingsdetails op en markeert de aanmelding als afgenomen
@@ -555,5 +555,5 @@ module.exports = (app) => {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post("/api/rijbewijzen/bewaar_resultaten_praktijk_examen", controller.bewaar_resultaten_praktijk_examen);
+  app.post("/api/bewaar_resultaten_praktijk_examen", controller.bewaar_resultaten_praktijk_examen);
 };
