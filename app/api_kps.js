@@ -32,9 +32,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'KPS subsysteem (Korps Politie Suriname - Afdeling Rijbewijzen)',
+      title: 'KPS subsysteem (Korps Politie Suriname - Rijbewijzenregister)',
       version: '1.0.0',
-      description: 'REST API voor beheer van rijbewijzen, rijscholen, examens en overtredingen',
+      description: 'REST API voor beheer van rijbewijzen, rijscholen en examens',
       contact: {
         name: 'KPS Admin',
         email: 'admin@kps.egov.com'
