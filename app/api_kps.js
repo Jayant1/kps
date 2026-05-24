@@ -40,7 +40,7 @@ const swaggerOptions = {
         email: 'admin@kps.egov.com'
       }
     },
-    servers: []
+    servers: ["https://kps-api.gov.sr:3000"]
   },
   apis: [path.join(__dirname, 'routes', '*.js')] // Path to the API docs
 };
